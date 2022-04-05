@@ -1,0 +1,569 @@
+{
+	"info": {
+		"_postman_id": "059d3bcb-8157-4c68-8378-7ba25f2bd5f3",
+		"name": "Review-API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Integrations",
+			"item": [
+				{
+					"name": "Basic - ApiKey Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{user_email}}\",\r\n    \"captcha\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{site}}/api/keys/register",
+							"host": [
+								"{{site}}"
+							],
+							"path": [
+								"api",
+								"keys",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Basic - ApiKey Deregister no Code",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{user_email}}\",\r\n    \"captcha\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{site}}/api/keys/deregister",
+							"host": [
+								"{{site}}"
+							],
+							"path": [
+								"api",
+								"keys",
+								"deregister"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Basic - ApiKey Deregister /w Code",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{user_email}}\",\r\n    \"captcha\": \"\",\r\n    \"code\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{site}}/api/keys/deregister",
+							"host": [
+								"{{site}}"
+							],
+							"path": [
+								"api",
+								"keys",
+								"deregister"
+							],
+							"query": [
+								{
+									"key": "apikey",
+									"value": "c2fb96a7-ee58-4447-9307-63eb69a2dd26",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Basic - ApiKey Forgot",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{user_email}}\",\r\n    \"captcha\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{site}}/api/keys/forgot",
+							"host": [
+								"{{site}}"
+							],
+							"path": [
+								"api",
+								"keys",
+								"forgot"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reviews",
+			"item": [
+				{
+					"name": "Create Review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code == 200){\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.environment.set(\"review_slug\", jsonData.slug);\r",
+									"    pm.environment.set(\"author_slug\", jsonData.author_slug);\r",
+									"    pm.environment.set(\"related_slug\", jsonData.related_slug);\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"slug\": \"burger-review\",\r\n    \"title\": \"Review of Joe's Diner\",\r\n    \"body\": \"Best hamburgers around!\",\r\n    \"rating\": 0.80,\r\n    \"bad\": false,\r\n    \"spam\": false,\r\n    \"helpful_counter\": 12,\r\n    \"unhelpful_counter\": 5,\r\n    \"author\": \"John Doe\",\r\n    \"author_email\": \"john@example.com\",\r\n    \"author_slug\": \"john-doe-42\",\r\n    \"datetime\": \"2016-01-01 10:00:00\",\r\n    \"related_slug\": \"best-restaurants-list\",\r\n    \"meta\":\r\n        {\r\n            \"created_in\": \"USA\"\r\n        }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{site}}/api/reviews?apikey={{apikey}}",
+							"host": [
+								"{{site}}"
+							],
+							"path": [
+								"api",
+								"reviews"
+							],
+							"query": [
+								{
+									"key": "apikey",
+									"value": "{{apikey}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Reviews",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{site}}/api/reviews?apikey={{apikey}}",
+							"host": [
+								"{{site}}"
+							],
+							"path": [
+								"api",
+								"reviews"
+							],
+							"query": [
+								{
+									"key": "apikey",
+									"value": "{{apikey}}"
+								},
+								{
+									"key": "spam",
+									"value": "false",
+									"disabled": true
+								},
+								{
+									"key": "bad",
+									"value": "false",
+									"disabled": true
+								},
+								{
+									"key": "helpful",
+									"value": "true",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Review - By Review",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{site}}/api/reviews/{{review_slug}}?apikey={{apikey}}",
+							"host": [
+								"{{site}}"
+							],
+							"path": [
+								"api",
+								"reviews",
+								"{{review_slug}}"
+							],
+							"query": [
+								{
+									"key": "apikey",
+									"value": "{{apikey}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Reviews - By Author",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{site}}/api/authors/{{author_slug}}/reviews?apikey={{apikey}}",
+							"host": [
+								"{{site}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{author_slug}}",
+								"reviews"
+							],
+							"query": [
+								{
+									"key": "apikey",
+									"value": "{{apikey}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Reviews - By Related",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{site}}/api/authors/{{author_slug}}/reviews?apikey={{apikey}}",
+							"host": [
+								"{{site}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{author_slug}}",
+								"reviews"
+							],
+							"query": [
+								{
+									"key": "apikey",
+									"value": "{{apikey}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code == 200){\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.environment.set(\"author_slug\", jsonData.author_slug);\r",
+									"    pm.environment.set(\"related_slug\", jsonData.related_slug);\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"Review of Joe's Diner\",\r\n    \"body\": \"Worst hamburgers around!\",\r\n    \"rating\": 0.10,\r\n    \"bad\": false,\r\n    \"spam\": false,\r\n    \"helpful_counter\": 12,\r\n    \"unhelpful_counter\": 5,\r\n    \"author\": \"John Doe\",\r\n    \"author_email\": \"john@example.com\",\r\n    \"author_slug\": \"john-doe-42\",\r\n    \"datetime\": \"2016-01-01 10:00:00\",\r\n    \"related_slug\": \"best-restaurants-list\",\r\n    \"meta\":\r\n        {\r\n            \"created_in\": \"USA\"\r\n        }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{site}}/api/reviews/{{review_slug}}?apikey={{apikey}}",
+							"host": [
+								"{{site}}"
+							],
+							"path": [
+								"api",
+								"reviews",
+								"{{review_slug}}"
+							],
+							"query": [
+								{
+									"key": "apikey",
+									"value": "{{apikey}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{site}}/api/reviews/{{review_slug}}?apikey={{apikey}}",
+							"host": [
+								"{{site}}"
+							],
+							"path": [
+								"api",
+								"reviews",
+								"{{review_slug}}"
+							],
+							"query": [
+								{
+									"key": "apikey",
+									"value": "{{apikey}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Comments",
+			"item": [
+				{
+					"name": "Create Comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code == 200){\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.environment.set(\"comment_id\", jsonData.id);\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"body\": \"Thanks for the kind review!\",\r\n    \"author\": \"Joe Doe\",\r\n    \"author_email\": \"joe@example.com\",\r\n    \"author_slug\": \"joe-doe-29\",\r\n    \"datetime\": \"2016-01-02 10:00:00\",\r\n    \"meta\":\r\n        {\r\n            \"created_in\": \"Germany\"\r\n        }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{site}}/api/reviews/{{review_slug}}/comments?apikey={{apikey}}",
+							"host": [
+								"{{site}}"
+							],
+							"path": [
+								"api",
+								"reviews",
+								"{{review_slug}}",
+								"comments"
+							],
+							"query": [
+								{
+									"key": "apikey",
+									"value": "{{apikey}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"body\": \"Thanks for the unkind review!\",\r\n    \"author\": \"Joe Doe\",\r\n    \"author_email\": \"joe@example.com\",\r\n    \"author_slug\": \"joe-doe-29\",\r\n    \"datetime\": \"2016-01-02 10:00:00\",\r\n    \"meta\":\r\n        {\r\n            \"created_in\": \"Germany\"\r\n        }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{site}}/api/reviews/{{review_slug}}/comments/{{comment_id}}?apikey={{apikey}}",
+							"host": [
+								"{{site}}"
+							],
+							"path": [
+								"api",
+								"reviews",
+								"{{review_slug}}",
+								"comments",
+								"{{comment_id}}"
+							],
+							"query": [
+								{
+									"key": "apikey",
+									"value": "{{apikey}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{site}}/api/reviews/{{review_slug}}/comments/{{comment_id}}?apikey={{apikey}}",
+							"host": [
+								"{{site}}"
+							],
+							"path": [
+								"api",
+								"reviews",
+								"{{review_slug}}",
+								"comments",
+								"{{comment_id}}"
+							],
+							"query": [
+								{
+									"key": "apikey",
+									"value": "{{apikey}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

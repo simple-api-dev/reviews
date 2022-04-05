@@ -1,0 +1,900 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Review API",
+        "description": "This is an open and free to use API for developers to test their client projects.\r\n        All API calls require you to pass in <br> your API Key with the querystring\r\n        <b>?apikey=########-####-####-####-############</b>, <br><br>Please\r\n        register for your own API Key today at https://reviews.simpleapi.dev/register ",
+        "version": "1.0"
+    },
+    "paths": {
+        "/api/reviews/{slug}/comments": {
+            "post": {
+                "tags": [
+                    "Comment"
+                ],
+                "summary": "Create a comment on a review",
+                "operationId": "comment.post",
+                "parameters": [
+                    {
+                        "name": "apikey",
+                        "in": "query",
+                        "description": "All api calls require the ?apikey querystring",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of review to attach comment to",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Submit comment field values",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "body"
+                                ],
+                                "properties": {
+                                    "body": {
+                                        "type": "string"
+                                    },
+                                    "author": {
+                                        "type": "string"
+                                    },
+                                    "author_email": {
+                                        "type": "string"
+                                    },
+                                    "author_slug": {
+                                        "type": "string"
+                                    },
+                                    "meta": {
+                                        "type": "object"
+                                    },
+                                    "datetime": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Comment created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "body": {
+                                            "type": "string"
+                                        },
+                                        "author": {
+                                            "type": "string"
+                                        },
+                                        "author_email": {
+                                            "type": "string"
+                                        },
+                                        "author_slug": {
+                                            "type": "string"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        },
+                                        "datetime": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/reviews/{slug}/comments/{id}": {
+            "put": {
+                "tags": [
+                    "Comment"
+                ],
+                "summary": "Update a comment on a review",
+                "operationId": "comment.put",
+                "parameters": [
+                    {
+                        "name": "apikey",
+                        "in": "query",
+                        "description": "All api calls require the ?apikey querystring",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of review to PUT comment on",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Comment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Submit comment field values",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "body": {
+                                        "type": "string"
+                                    },
+                                    "author": {
+                                        "type": "string"
+                                    },
+                                    "author_email": {
+                                        "type": "string"
+                                    },
+                                    "author_slug": {
+                                        "type": "string"
+                                    },
+                                    "meta": {
+                                        "type": "object"
+                                    },
+                                    "datetime": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Comment updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "body": {
+                                            "type": "string"
+                                        },
+                                        "author": {
+                                            "type": "string"
+                                        },
+                                        "author_email": {
+                                            "type": "string"
+                                        },
+                                        "author_slug": {
+                                            "type": "string"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        },
+                                        "datetime": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/reviews/{slug}/comment/{id}": {
+            "delete": {
+                "tags": [
+                    "Comment"
+                ],
+                "summary": "Deletes a specified comment on a review",
+                "operationId": "comment.remove",
+                "parameters": [
+                    {
+                        "name": "apikey",
+                        "in": "query",
+                        "description": "All api calls require the ?apikey querystring",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of review comment belongs to",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Comment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns a message"
+                    }
+                }
+            }
+        },
+        "/api/keys/register": {
+            "post": {
+                "tags": [
+                    "Integrations"
+                ],
+                "summary": "Register for new api key",
+                "operationId": "IntegrationController.Register",
+                "requestBody": {
+                    "description": "Pass email and captcha",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "captcha"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user1@mail.com"
+                                    },
+                                    "captcha": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Registration successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "We have emailed you your api key."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/keys/forgot": {
+            "post": {
+                "tags": [
+                    "Integrations"
+                ],
+                "summary": "Resend apikey to email on file",
+                "operationId": "IntegrationController.Forgot",
+                "requestBody": {
+                    "description": "Pass email and captcha",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "captcha"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user1@mail.com"
+                                    },
+                                    "captcha": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Registration successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "We have emailed you your api key again."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/keys/deregister": {
+            "post": {
+                "tags": [
+                    "Integrations"
+                ],
+                "summary": "Delete your developer account",
+                "operationId": "IntegrationController.Deregister",
+                "requestBody": {
+                    "description": "Pass email and code",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user1@mail.com"
+                                    },
+                                    "code": {
+                                        "type": "string",
+                                        "example": "23445"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Deactivation request received",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "If code not provided, we have emailed you code to complete account deletion."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/reviews": {
+            "get": {
+                "tags": [
+                    "Review"
+                ],
+                "summary": "Retrieve all reviews",
+                "operationId": "review.index",
+                "parameters": [
+                    {
+                        "name": "apikey",
+                        "in": "query",
+                        "description": "All api calls require the ?apikey querystring",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "spam",
+                        "in": "query",
+                        "description": "?spam=true to get reviews marked as spam",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "bad",
+                        "in": "query",
+                        "description": "?bad=true to get reviews marked as inappropriate/bad",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "helpful",
+                        "in": "query",
+                        "description": "?helpful=true to get reviews that are helpful",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A collection of reviews"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Review"
+                ],
+                "summary": "Create a new review.  There's a limit of 100 reviews per developer account.",
+                "operationId": "review.post",
+                "parameters": [
+                    {
+                        "name": "apikey",
+                        "in": "query",
+                        "description": "All api calls require the ?apikey querystring",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Submit review field values",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "slug"
+                                ],
+                                "properties": {
+                                    "slug": {
+                                        "type": "string"
+                                    },
+                                    "rating": {
+                                        "type": "number"
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "body": {
+                                        "type": "string"
+                                    },
+                                    "bad": {
+                                        "type": "boolean"
+                                    },
+                                    "helpful_counter": {
+                                        "type": "integer"
+                                    },
+                                    "unhelpful_counter": {
+                                        "type": "integer"
+                                    },
+                                    "related_slug": {
+                                        "type": "string"
+                                    },
+                                    "author": {
+                                        "type": "string"
+                                    },
+                                    "author_email": {
+                                        "type": "string"
+                                    },
+                                    "author_slug": {
+                                        "type": "string"
+                                    },
+                                    "meta": {
+                                        "type": "object"
+                                    },
+                                    "datetime": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Review created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "slug": {
+                                            "type": "string"
+                                        },
+                                        "rating": {
+                                            "type": "number"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "body": {
+                                            "type": "string"
+                                        },
+                                        "bad": {
+                                            "type": "boolean"
+                                        },
+                                        "helpful_counter": {
+                                            "type": "integer"
+                                        },
+                                        "unhelpful_counter": {
+                                            "type": "integer"
+                                        },
+                                        "related_slug": {
+                                            "type": "string"
+                                        },
+                                        "author": {
+                                            "type": "string"
+                                        },
+                                        "author_email": {
+                                            "type": "string"
+                                        },
+                                        "author_slug": {
+                                            "type": "string"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        },
+                                        "datetime": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/authors/{author_slug}/reviews": {
+            "get": {
+                "tags": [
+                    "Review"
+                ],
+                "summary": "Retrieve all reviews by author",
+                "operationId": "review.indexByUser",
+                "parameters": [
+                    {
+                        "name": "apikey",
+                        "in": "query",
+                        "description": "All api calls require the ?apikey querystring",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "author_slug",
+                        "in": "path",
+                        "description": "The slug of the author",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "spam",
+                        "in": "query",
+                        "description": "?spam=true to get reviews marked as spam",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "bad",
+                        "in": "query",
+                        "description": "?bad=true to get reviews marked as inappropriate/bad",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "helpful",
+                        "in": "query",
+                        "description": "?helpful=true to get reviews that are helpful",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A collection of reviews"
+                    }
+                }
+            }
+        },
+        "/api/related/{related_slug}/reviews": {
+            "get": {
+                "tags": [
+                    "Review"
+                ],
+                "summary": "Retrieve all reviews having a related slug",
+                "operationId": "review.indexByRelated",
+                "parameters": [
+                    {
+                        "name": "apikey",
+                        "in": "query",
+                        "description": "All api calls require the ?apikey querystring",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "related_slug",
+                        "in": "path",
+                        "description": "The slug of the related grouping.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "spam",
+                        "in": "query",
+                        "description": "?spam=true to get reviews marked as spam",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "bad",
+                        "in": "query",
+                        "description": "?bad=true to get reviews marked as inappropriate/bad",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "helpful",
+                        "in": "query",
+                        "description": "?helpful=true to get reviews that are helpful",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A collection of reviews"
+                    }
+                }
+            }
+        },
+        "/api/reviews/{slug}": {
+            "get": {
+                "tags": [
+                    "Review"
+                ],
+                "summary": "Retrieve specific review",
+                "operationId": "review.get",
+                "parameters": [
+                    {
+                        "name": "apikey",
+                        "in": "query",
+                        "description": "All api calls require the ?apikey querystring",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "The slug of the review you wish to retrieve",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A review"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Review"
+                ],
+                "summary": "Update a review",
+                "operationId": "review.put",
+                "parameters": [
+                    {
+                        "name": "apikey",
+                        "in": "query",
+                        "description": "All api calls require the ?apikey querystring",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of review to update",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Submit review fields to update review with",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "rating": {
+                                        "type": "number"
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "body": {
+                                        "type": "string"
+                                    },
+                                    "bad": {
+                                        "type": "boolean"
+                                    },
+                                    "helpful_counter": {
+                                        "type": "integer"
+                                    },
+                                    "unhelpful_counter": {
+                                        "type": "integer"
+                                    },
+                                    "related_slug": {
+                                        "type": "string"
+                                    },
+                                    "author": {
+                                        "type": "string"
+                                    },
+                                    "author_email": {
+                                        "type": "string"
+                                    },
+                                    "author_slug": {
+                                        "type": "string"
+                                    },
+                                    "meta": {
+                                        "type": "object"
+                                    },
+                                    "datetime": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Review updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "slug": {
+                                            "type": "string"
+                                        },
+                                        "rating": {
+                                            "type": "number"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "body": {
+                                            "type": "string"
+                                        },
+                                        "bad": {
+                                            "type": "boolean"
+                                        },
+                                        "helpful_counter": {
+                                            "type": "integer"
+                                        },
+                                        "unhelpful_counter": {
+                                            "type": "integer"
+                                        },
+                                        "related_slug": {
+                                            "type": "string"
+                                        },
+                                        "author": {
+                                            "type": "string"
+                                        },
+                                        "author_email": {
+                                            "type": "string"
+                                        },
+                                        "author_slug": {
+                                            "type": "string"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        },
+                                        "datetime": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Review"
+                ],
+                "summary": "Deletes the review.",
+                "operationId": "review.remove",
+                "parameters": [
+                    {
+                        "name": "apikey",
+                        "in": "query",
+                        "description": "All api calls require the ?apikey querystring",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of review to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns a message"
+                    }
+                }
+            }
+        }
+    }
+}
