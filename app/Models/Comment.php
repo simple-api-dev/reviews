@@ -17,12 +17,12 @@ class Comment extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'review_slug', 'body', 'author', 'author_email', 
-        'author_slug', 'meta', 'datetime'
+        'review_id', 'body', 'author', 'author_email', 
+        'author_slug', 'meta', 'commented_at'
     ];
 
     protected $hidden = [
-        'review_slug', 'deleted_at', 'updated_at', 'created_at', 'integration_id'
+        'deleted_at', 'updated_at', 'created_at', 'integration_id'
     ];
 
     public function getMetaAttribute($value){
@@ -31,6 +31,6 @@ class Comment extends Model
 
     public function review()
     {
-        return $this->belongsTo(App\Models\Review::class, 'slug', 'review_slug');
+        return $this->belongsTo(\App\Models\Review::class);
     }
 }

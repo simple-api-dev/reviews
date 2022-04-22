@@ -17,7 +17,6 @@ class ApiKeyAuthentication
      */
     public function handle(Request $request, Closure $next): mixed
     {
-
         if($request->has('apikey')){
             $key = $request->get('apikey');
             //$query = "SELECT * FROM integrations where apikey='{$key}'";

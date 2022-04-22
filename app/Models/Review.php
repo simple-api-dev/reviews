@@ -18,13 +18,13 @@ class Review extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'slug', 'rating', 'title', 'body', 'bad', 'spam', 
-        'helpful_counter', 'unhelpful_counter', 'related_slug', 
-        'author', 'author_email', 'author_slug', 'meta', 'datetime'
+        'tags', 'rating', 'title', 'body', 'bad', 'spam', 
+        'helpful_counter', 'unhelpful_counter', 'author',
+        'author_email', 'author_slug', 'meta', 'reviewed_at'
     ];
 
     protected $hidden = [
-        'id', 'deleted_at', 'updated_at', 'created_at', 'integration_id'
+        'deleted_at', 'updated_at', 'created_at', 'integration_id'
     ];
 
     public function getMetaAttribute($value){
@@ -37,8 +37,17 @@ class Review extends Model
         return $this->helpful_counter >= $this->unhelpful_counter;
     }
 
+    //calculates the helpfulness of the review
+    //as a ratio of helpful to unhelpful
+    public function getHelpfulScoreAttribute()
+    {
+        if ($this->unhelpful_counter == 0) return $this->helpful_counter;
+        elseif ($this->helpful_counter == 0) return -$this->unhelpful_counter;
+        else return $this->helpful_counter / $this->unhelpful_counter;
+    }
+
     public function comments()
     {
-        return $this->hasMany(\App\Models\Comment::class, 'review_slug', 'slug');
+        return $this->hasMany(\App\Models\Comment::class);
     }
 }

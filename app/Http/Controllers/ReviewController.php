@@ -29,42 +29,67 @@ class ReviewController extends Controller
      *         in="query",
      *         description="?spam=true to get reviews marked as spam",
      *         required=false,
-     *         @OA\Schema(type="boolean"),
+     *         @OA\Schema(type="string", enum={"true", "false", 1,0}),
      *      ),
      *      @OA\Parameter(
      *         name="bad",
      *         in="query",
      *         description="?bad=true to get reviews marked as inappropriate/bad",
      *         required=false,
-     *         @OA\Schema(type="boolean"),
+     *         @OA\Schema(type="string", enum={"true", "false", 1,0}),
      *      ),
      *      @OA\Parameter(
      *         name="helpful",
      *         in="query",
      *         description="?helpful=true to get reviews that are helpful",
      *         required=false,
-     *         @OA\Schema(type="boolean"),
+     *         @OA\Schema(type="string", enum={"true", "false", 1,0}),
+     *      ),
+     *      @OA\Parameter(
+     *         name="tags",
+     *         in="query",
+     *         description="?tags=tag1,tag2... to get reviews grouped by tag",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="array",
+     *             @OA\Items(type="string")
+     *          ),
+     *          style="simple",
+     *          explode=false
      *      ),
      *     @OA\Response(response="200", description="A collection of reviews")
      * )
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Review::where("integration_id", $this->integration_id)->with('comments');
+        $query = Review::where("integration_id", $this->integration_id)
+                        ->orderByDesc('reviewed_at')
+                        ->with(['comments' => function($query){
+                            return $query->orderByDesc('commented_at');
+                        }]);
 
-        //main filters
-        if(strtolower($request->get('spam')) == "true" || strtolower($request->get('spam')) == "false") {
+        //spam filter
+        if (strtolower($request->get('spam')) == "true" || strtolower($request->get('spam')) == "false") {
             $query->where("spam", strtolower($request->get('spam')) == "true");
         }
-        if(strtolower($request->get('bad')) == "true" || strtolower($request->get('bad')) == "false") {
-            $query->where("bad", strtolower($request->get('bad')) == "true");
+        elseif (strtolower($request->get('spam')) == "1" || strtolower($request->get('spam')) == "0")
+        {
+            $query->where("spam", strtolower($request->get('spam')) == "1");
         }
 
-        $results = $query->get();
+        //bad filter
+        if (strtolower($request->get('bad')) == "true" || strtolower($request->get('bad')) == "false") {
+            $query->where("bad", strtolower($request->get('bad')) == "true");
+        }
+        elseif (strtolower($request->get('bad')) == "1" || strtolower($request->get('bad')) == "0") {
+            $query->where("bad", strtolower($request->get('bad')) == "1");
+        }
+
+        $reviews = $query->get();
 
         //helpful/non-helpful filter
         if(strtolower($request->get('helpful')) == "true" || strtolower($request->get('helpful')) == "false") {
-            $results = $results->filter(function($item) use ($request)
+            $reviews = $reviews->filter(function($item) use ($request)
             {
                 if (strtolower($request->get('helpful')) == "true" && $item->isHelpful())
                     return $item;
@@ -72,13 +97,42 @@ class ReviewController extends Controller
                     return $item;
             });
         }
+        elseif(strtolower($request->get('helpful')) == "1" || strtolower($request->get('helpful')) == "0") {
+            $reviews = $reviews->filter(function($item) use ($request)
+            {
+                if (strtolower($request->get('helpful')) == "1" && $item->isHelpful())
+                    return $item;
+                elseif (strtolower($request->get('helpful')) == "0" && !$item->isHelpful())
+                    return $item;
+            });
+        }
+
+        //filter for tags
+        if ($request->get('tags'))
+        {
+            $tags = explode(',', $request->get('tags'));
+
+            $reviews = $reviews->filter(function($item) use ($tags)
+            {
+                //all tags have to be present in item->tags
+                if (count(array_diff($tags, explode(',', $item->tags))) == 0)
+                    return $item;
+            })->values();
+        }
+
+        //compile results with metadata
+        $results = ['reviews' => $reviews];
+        $results['avg_rating'] = count($reviews) > 0? $reviews->sum(fn($item) => $item->rating) / count($reviews) : null;
+        $results['most_helpful'] = $reviews->where('helpful_score', $reviews->max(fn($review) => $review->helpful_score))->first();
+        $results['least_helpful'] = $reviews->where('helpful_score', $reviews->min(fn($review) => $review->helpful_score))->first();
+        $results['reviews_count'] = count($reviews);
 
         return response()->json($results, 200);
     }
 
     /**
      * @OA\Get(
-     *     path="/api/authors/{author_slug}/reviews",
+     *     path="/api/authors/{author_slug}",
      *     summary="Retrieve all reviews by author",
      *     operationId="review.indexByUser",
      *     tags={"Review"},
@@ -101,43 +155,68 @@ class ReviewController extends Controller
      *         in="query",
      *         description="?spam=true to get reviews marked as spam",
      *         required=false,
-     *         @OA\Schema(type="boolean"),
+     *         @OA\Schema(type="string", enum={"true", "false", 1,0}),
      *      ),
      *      @OA\Parameter(
      *         name="bad",
      *         in="query",
      *         description="?bad=true to get reviews marked as inappropriate/bad",
      *         required=false,
-     *         @OA\Schema(type="boolean"),
+     *         @OA\Schema(type="string", enum={"true", "false", 1,0}),
      *      ),
      *      @OA\Parameter(
      *         name="helpful",
      *         in="query",
      *         description="?helpful=true to get reviews that are helpful",
      *         required=false,
-     *         @OA\Schema(type="boolean"),
+     *         @OA\Schema(type="string", enum={"true", "false", 1,0}),
+     *      ),
+     *      @OA\Parameter(
+     *         name="tags",
+     *         in="query",
+     *         description="?tags=tag1,tag2... to get reviews grouped by tag",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="array",
+     *             @OA\Items(type="string")
+     *          ),
+     *          style="simple",
+     *          explode=false
      *      ),
      *     @OA\Response(response="200", description="A collection of reviews")
      * )
      */
     public function indexByUser(Request $request, string $author_slug): JsonResponse
     {
-        $query = Review::where("integration_id", $this->integration_id)->with('comments')
+        $query = Review::where("integration_id", $this->integration_id)
+                        ->with(['comments' => function($query){
+                            return $query->orderByDesc('commented_at');
+                        }])
+                        ->orderByDesc('reviewed_at')
                         ->where('author_slug', $author_slug);
 
-        //main filters
-        if(strtolower($request->get('spam')) == "true" || strtolower($request->get('spam')) == "false") {
+        //spam filter
+        if (strtolower($request->get('spam')) == "true" || strtolower($request->get('spam')) == "false") {
             $query->where("spam", strtolower($request->get('spam')) == "true");
         }
-        if(strtolower($request->get('bad')) == "true" || strtolower($request->get('bad')) == "false") {
-            $query->where("bad", strtolower($request->get('bad')) == "true");
+        elseif (strtolower($request->get('spam')) == "1" || strtolower($request->get('spam')) == "0")
+        {
+            $query->where("spam", strtolower($request->get('spam')) == "1");
         }
 
-        $results = $query->get();
+        //bad filter
+        if (strtolower($request->get('bad')) == "true" || strtolower($request->get('bad')) == "false") {
+            $query->where("bad", strtolower($request->get('bad')) == "true");
+        }
+        elseif (strtolower($request->get('bad')) == "1" || strtolower($request->get('bad')) == "0") {
+            $query->where("bad", strtolower($request->get('bad')) == "1");
+        }
+
+        $reviews = $query->get();
 
         //helpful/non-helpful filter
         if(strtolower($request->get('helpful')) == "true" || strtolower($request->get('helpful')) == "false") {
-            $results = $results->filter(function($item) use ($request)
+            $reviews = $reviews->filter(function($item) use ($request)
             {
                 if (strtolower($request->get('helpful')) == "true" && $item->isHelpful())
                     return $item;
@@ -145,86 +224,42 @@ class ReviewController extends Controller
                     return $item;
             });
         }
-
-        return response()->json($results, 200);
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/api/related/{related_slug}/reviews",
-     *     summary="Retrieve all reviews having a related slug",
-     *     operationId="review.indexByRelated",
-     *     tags={"Review"},
-     *     @OA\Parameter(
-     *         name="apikey",
-     *         in="query",
-     *         description="All api calls require the ?apikey querystring",
-     *         required=true,
-     *         @OA\Schema(type="string"),
-     *      ),
-     *      @OA\Parameter(
-     *         name="related_slug",
-     *         in="path",
-     *         description="The slug of the related grouping.",
-     *         required=true,
-     *         @OA\Schema(type="string"),
-     *      ),
-     *      @OA\Parameter(
-     *         name="spam",
-     *         in="query",
-     *         description="?spam=true to get reviews marked as spam",
-     *         required=false,
-     *         @OA\Schema(type="boolean"),
-     *      ),
-     *      @OA\Parameter(
-     *         name="bad",
-     *         in="query",
-     *         description="?bad=true to get reviews marked as inappropriate/bad",
-     *         required=false,
-     *         @OA\Schema(type="boolean"),
-     *      ),
-     *      @OA\Parameter(
-     *         name="helpful",
-     *         in="query",
-     *         description="?helpful=true to get reviews that are helpful",
-     *         required=false,
-     *         @OA\Schema(type="boolean"),
-     *      ),
-     *     @OA\Response(response="200", description="A collection of reviews")
-     * )
-     */
-    public function indexByRelated(Request $request, string $related_slug): JsonResponse
-    {
-        $query = Review::where("integration_id", $this->integration_id)->with('comments')
-                        ->where('related_slug', $related_slug);
-
-        //main filters
-        if(strtolower($request->get('spam')) == "true" || strtolower($request->get('spam')) == "false") {
-            $query->where("spam", strtolower($request->get('spam')) == "true");
-        }
-        if(strtolower($request->get('bad')) == "true" || strtolower($request->get('bad')) == "false") {
-            $query->where("bad", strtolower($request->get('bad')) == "true");
-        }
-
-        $results = $query->get();
-
-        //helpful/non-helpful filter
-        if(strtolower($request->get('helpful')) == "true" || strtolower($request->get('helpful')) == "false") {
-            $results = $results->filter(function($item) use ($request)
+        elseif(strtolower($request->get('helpful')) == "1" || strtolower($request->get('helpful')) == "0") {
+            $reviews = $reviews->filter(function($item) use ($request)
             {
-                if (strtolower($request->get('helpful')) == "true" && $item->isHelpful())
+                if (strtolower($request->get('helpful')) == "1" && $item->isHelpful())
                     return $item;
-                elseif (strtolower($request->get('helpful')) == "false" && !$item->isHelpful())
+                elseif (strtolower($request->get('helpful')) == "0" && !$item->isHelpful())
                     return $item;
             });
         }
 
+        //filter for tags
+        if ($request->get('tags'))
+        {
+            $tags = explode(',', $request->get('tags'));
+
+            $reviews = $reviews->filter(function($item) use ($tags)
+            {
+                //all tags have to be present in item->tags
+                if (count(array_diff($tags, explode(',', $item->tags))) == 0)
+                    return $item;
+            })->values();
+        }
+
+        //compile results with metadata
+        $results = ['reviews' => $reviews];
+        $results['avg_rating'] = count($reviews) > 0? $reviews->sum(fn($item) => $item->rating) / count($reviews) : null;
+        $results['most_helpful'] = $reviews->where('helpful_score', $reviews->max(fn($review) => $review->helpful_score))->first();
+        $results['least_helpful'] = $reviews->where('helpful_score', $reviews->min(fn($review) => $review->helpful_score))->first();
+        $results['reviews_count'] = count($reviews);
+
         return response()->json($results, 200);
     }
 
     /**
      * @OA\Get(
-     *     path="/api/reviews/{slug}",
+     *     path="/api/reviews/{id}",
      *     summary="Retrieve specific review",
      *     operationId="review.get",
      *     tags={"Review"},
@@ -236,26 +271,29 @@ class ReviewController extends Controller
      *         @OA\Schema(type="string"),
      *      ),
      *     @OA\Parameter(
-     *         name="slug",
+     *         name="id",
      *         in="path",
-     *         description="The slug of the review you wish to retrieve",
+     *         description="The ID of the review to retrieve",
      *         required=true,
-     *         @OA\Schema(type="string"),
+     *         @OA\Schema(type="integer"),
      *      ),
      *     @OA\Response(response="200", description="A review")
      * )
      */
-    public function get(Request $request, string $slug): JsonResponse
+    public function get(Request $request, $id): JsonResponse
     {
-        $query = Review::where("integration_id", $this->integration_id)->with('comments')
-                ->where('slug', $slug);
+        $query = Review::where("integration_id", $this->integration_id)
+                ->with(['comments' => function($query){
+                    return $query->orderByDesc('commented_at');
+                }])
+                ->where('id', $id);
 
         $result = $query->first();
 
         if($result)
             return response()->json($result);
         else
-            return response()->json("Review {$slug} not found", 404);
+            return response()->json("Review {$id} not found", 404);
     }
 
     /**
@@ -275,41 +313,38 @@ class ReviewController extends Controller
      *    required=true,
      *    description="Submit review field values",
      *    @OA\JsonContent(
-     *       required={"slug"},
-     *     @OA\Property(property="slug", type="string"),
      *     @OA\Property(property="rating", type="number"),
      *     @OA\Property(property="title", type="string"),
      *     @OA\Property(property="body", type="string"),
      *     @OA\Property(property="bad", type="boolean"),
      *     @OA\Property(property="helpful_counter", type="integer"),
      *     @OA\Property(property="unhelpful_counter", type="integer"),
-     *     @OA\Property(property="related_slug", type="string"),
      *     @OA\Property(property="author", type="string"),
      *     @OA\Property(property="author_email", type="string"),
      *     @OA\Property(property="author_slug", type="string"),
      *     @OA\Property(property="meta", type="object"),
-     *     @OA\Property(property="datetime", type="string"),
+     *     @OA\Property(property="tags", type="string"),
+     *     @OA\Property(property="reviewed_at", type="string"),
      *    ),
      * ),
      * @OA\Response(
      *    response=200,
      *    description="Review created successfully",
      *    @OA\JsonContent(
-     *     @OA\Property(property="slug", type="string"),
      *     @OA\Property(property="rating", type="number"),
      *     @OA\Property(property="title", type="string"),
      *     @OA\Property(property="body", type="string"),
      *     @OA\Property(property="bad", type="boolean"),
      *     @OA\Property(property="helpful_counter", type="integer"),
      *     @OA\Property(property="unhelpful_counter", type="integer"),
-     *     @OA\Property(property="related_slug", type="string"),
      *     @OA\Property(property="author", type="string"),
      *     @OA\Property(property="author_email", type="string"),
      *     @OA\Property(property="author_slug", type="string"),
      *     @OA\Property(property="meta", type="object"),
-     *     @OA\Property(property="datetime", type="string"),
-     *        )
+     *     @OA\Property(property="tags", type="string"),
+     *     @OA\Property(property="reviewed_at", type="string"),
      *     )
+     *   )
      * )
      */
     /**
@@ -319,7 +354,6 @@ class ReviewController extends Controller
     public function post(Request $request) : JsonResponse{
 
         $this->validate($request, [
-            'slug' => 'required|string|max:255|unique:reviews',
             'rating' => 'sometimes|numeric|between:0.00,1.00',
             'title' => 'sometimes|string|max:255',
             'body' => 'sometimes|string|max:1024',
@@ -331,13 +365,14 @@ class ReviewController extends Controller
             'author' => 'sometimes|string|max:255',
             'author_email' => 'sometimes|string|max:255',
             'author_slug' => 'sometimes|string|max:255',
-            'datetime' => 'sometimes|date|max:255',
-            'meta' => 'sometimes|array'
+            'reviewed_at' => 'sometimes|date|max:255',
+            'meta' => 'sometimes|array',
+            'tags' => 'sometimes|string'
         ]);
 
         // Limit the total reviews per account
         $limit_reached = Review::where("integration_id", $this->integration_id)->count() > 100;
-        $message = "Maximum number of reviews (25) per developer account has been reached.";
+        $message = "Maximum number of reviews (100) per developer account has been reached.";
         
         if($limit_reached){
             return response()->json($message, 403);
@@ -376,7 +411,7 @@ class ReviewController extends Controller
     
     /**
      * @OA\Put(
-     * path="/api/reviews/{slug}",
+     * path="/api/reviews/{id}",
      * summary="Update a review",
      * operationId="review.put",
      * tags={"Review"},
@@ -388,11 +423,11 @@ class ReviewController extends Controller
      *         @OA\Schema(type="string"),
      *      ),
      *      @OA\Parameter(
-     *         name="slug",
+     *         name="id",
      *         in="path",
-     *         description="Slug of review to update",
+     *         description="ID of review to update",
      *         required=true,
-     *         @OA\Schema(type="string"),
+     *         @OA\Schema(type="integer"),
      *      ),
      * @OA\RequestBody(
      *    required=true,
@@ -404,42 +439,41 @@ class ReviewController extends Controller
      *     @OA\Property(property="bad", type="boolean"),
      *     @OA\Property(property="helpful_counter", type="integer"),
      *     @OA\Property(property="unhelpful_counter", type="integer"),
-     *     @OA\Property(property="related_slug", type="string"),
      *     @OA\Property(property="author", type="string"),
      *     @OA\Property(property="author_email", type="string"),
      *     @OA\Property(property="author_slug", type="string"),
      *     @OA\Property(property="meta", type="object"),
-     *     @OA\Property(property="datetime", type="string"),
-     *    ),
+     *     @OA\Property(property="tags", type="string"),
+     *     @OA\Property(property="reviewed_at", type="string"),
+     *     )
      * ),
      * @OA\Response(
      *    response=200,
      *    description="Review updated successfully",
      *    @OA\JsonContent(
-     *     @OA\Property(property="slug", type="string"),
      *     @OA\Property(property="rating", type="number"),
      *     @OA\Property(property="title", type="string"),
      *     @OA\Property(property="body", type="string"),
      *     @OA\Property(property="bad", type="boolean"),
      *     @OA\Property(property="helpful_counter", type="integer"),
      *     @OA\Property(property="unhelpful_counter", type="integer"),
-     *     @OA\Property(property="related_slug", type="string"),
      *     @OA\Property(property="author", type="string"),
      *     @OA\Property(property="author_email", type="string"),
      *     @OA\Property(property="author_slug", type="string"),
      *     @OA\Property(property="meta", type="object"),
-     *     @OA\Property(property="datetime", type="string"),
-     *        )
-     *     )
+     *     @OA\Property(property="tags", type="string"),
+     *     @OA\Property(property="reviewed_at", type="string"),
+     *    )
+     *  )
      * )
      */
     /**
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function put(Request $request, string $slug): JsonResponse
+    public function put(Request $request, $id): JsonResponse
     {
-        $review = Review::where('slug', $slug)->first();
+        $review = Review::where('id', $id)->first();
         if($review && $review->integration_id == $this->integration_id) 
         {
             $validated = $this->validate($request, [
@@ -454,8 +488,9 @@ class ReviewController extends Controller
                 'author' => 'sometimes|string|max:255',
                 'author_email' => 'sometimes|string|max:255',
                 'author_slug' => 'sometimes|string|max:255',
-                'datetime' => 'sometimes|date|max:255',
-                'meta' => 'sometimes|array'
+                'reviewed_at' => 'sometimes|date|max:255',
+                'meta' => 'sometimes|array',
+                'tags' => 'sometimes|string'
             ]);
 
             //validate meta field
@@ -474,13 +509,13 @@ class ReviewController extends Controller
             return response()->json($review, 200);
         }
         else {
-            return response()->json("Review {$slug} not found", 404);
+            return response()->json("Review {$id} not found", 404);
         }
     }
 
     /**
      * @OA\Delete(
-     *     path="/api/reviews/{slug}",
+     *     path="/api/reviews/{id}",
      *     summary="Deletes the review.",
      *     operationId="review.remove",
      *     tags={"Review"},
@@ -492,11 +527,11 @@ class ReviewController extends Controller
      *         @OA\Schema(type="string"),
      *      ),
      *     @OA\Parameter(
-     *         name="slug",
+     *         name="id",
      *         in="path",
-     *         description="Slug of review to delete",
+     *         description="ID of review to delete",
      *         required=true,
-     *         @OA\Schema(type="string"),
+     *         @OA\Schema(type="integer"),
      *      ),
      *     @OA\Response(response="200", description="Returns a message")
      * )
@@ -505,15 +540,15 @@ class ReviewController extends Controller
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function remove(string $slug) : JsonResponse
+    public function remove($id) : JsonResponse
     {
-        $review = Review::where('slug', $slug)->first();
+        $review = Review::where('id', $id)->first();
 
         if ($review && $review->integration_id == $this->integration_id) {
             $review->delete();
-            return response()->json("Review {$slug} deleted", 200);
+            return response()->json("Review {$id} deleted", 200);
         }
 
-        return response()->json("Review {$slug} not found", 404);
+        return response()->json("Review {$id} not found", 404);
     }
 }

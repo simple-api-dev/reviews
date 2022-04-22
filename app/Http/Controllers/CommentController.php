@@ -14,7 +14,7 @@ class CommentController extends Controller
 {
     /**
      * @OA\Post(
-     * path="/api/reviews/{slug}/comments",
+     * path="/api/reviews/{id}/comments",
      * summary="Create a comment on a review",
      * operationId="comment.post",
      * tags={"Comment"},
@@ -26,9 +26,9 @@ class CommentController extends Controller
      *         @OA\Schema(type="string"),
      *      ),
      *      @OA\Parameter(
-     *         name="slug",
+     *         name="id",
      *         in="path",
-     *         description="Slug of review to attach comment to",
+     *         description="ID of review to attach comment to",
      *         required=true,
      *         @OA\Schema(type="string"),
      *      ),
@@ -42,7 +42,7 @@ class CommentController extends Controller
      *     @OA\Property(property="author_email", type="string"),
      *     @OA\Property(property="author_slug", type="string"),
      *     @OA\Property(property="meta", type="object"),
-     *     @OA\Property(property="datetime", type="string"),
+     *     @OA\Property(property="commented_at", type="string"),
      *    ),
      * ),
      * @OA\Response(
@@ -54,7 +54,7 @@ class CommentController extends Controller
      *     @OA\Property(property="author_email", type="string"),
      *     @OA\Property(property="author_slug", type="string"),
      *     @OA\Property(property="meta", type="object"),
-     *     @OA\Property(property="datetime", type="string"),
+     *     @OA\Property(property="commented_at", type="string"),
      *        )
      *     )
      * )
@@ -63,26 +63,26 @@ class CommentController extends Controller
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function post(Request $request, string $slug): JsonResponse
+    public function post(Request $request, int $id): JsonResponse
     {
         //get and check review
-        $review = Review::where('slug', $slug)->first();
-        if (!$review) return response()->json("Review {$slug} not found", 404);
+        $review = Review::where('id', $id)->first();
+        if (!$review) return response()->json("Review {$id} not found", 404);
 
         //check if comment exists already
         $comment = $review->comments()->first();
-        if ($comment) return response()->json("Review {$slug} already has a comment", 403);
+        if ($comment) return response()->json("Review {$id} already has a comment", 403);
 
         //get and check proper integration
         if ($review->integration_id != $this->integration_id)
-            return response()->json("Review {$slug} not found", 404);
+            return response()->json("Review {$id} not found", 404);
 
         $validated = $this->validate($request, [
             'body' => 'required|string|max:1024',
             'author' => 'sometimes|string|max:255',
             'author_email' => 'sometimes|string|max:255',
             'author_slug' => 'sometimes|string|max:255',
-            'datetime' => 'sometimes|date|max:255',
+            'commented_at' => 'sometimes|date|max:255',
             'meta' => 'sometimes|array'
         ]);
 
@@ -101,7 +101,7 @@ class CommentController extends Controller
         //create comment
         $comment = new Comment($validated);
         $comment->integration_id = $this->integration_id;
-        $comment->review_slug = $review->slug;
+        $comment->review_id = $review->id;
         $review->comments()->save($comment);
         
         return response()->json($comment, 200);
@@ -109,7 +109,7 @@ class CommentController extends Controller
 
     /**
      * @OA\Put(
-     * path="/api/reviews/{slug}/comments/{id}",
+     * path="/api/reviews/{review_id}/comments/{id}",
      * summary="Update a comment on a review",
      * operationId="comment.put",
      * tags={"Comment"},
@@ -121,9 +121,9 @@ class CommentController extends Controller
      *         @OA\Schema(type="string"),
      *      ),
      *      @OA\Parameter(
-     *         name="slug",
+     *         name="review_id",
      *         in="path",
-     *         description="Slug of review to PUT comment on",
+     *         description="ID of review the comment belongs to",
      *         required=true,
      *         @OA\Schema(type="string"),
      *      ),
@@ -143,7 +143,7 @@ class CommentController extends Controller
      *     @OA\Property(property="author_email", type="string"),
      *     @OA\Property(property="author_slug", type="string"),
      *     @OA\Property(property="meta", type="object"),
-     *     @OA\Property(property="datetime", type="string"),
+     *     @OA\Property(property="commented_at", type="string"),
      *    ),
      * ),
      * @OA\Response(
@@ -155,7 +155,7 @@ class CommentController extends Controller
      *     @OA\Property(property="author_email", type="string"),
      *     @OA\Property(property="author_slug", type="string"),
      *     @OA\Property(property="meta", type="object"),
-     *     @OA\Property(property="datetime", type="string"),
+     *     @OA\Property(property="commented_at", type="string"),
      *        )
      *     )
      * )
@@ -164,9 +164,9 @@ class CommentController extends Controller
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function put(Request $request, string $slug, int $id): JsonResponse
+    public function put(Request $request, int $review_id, int $id): JsonResponse
     {
-        $comment = Comment::where('review_slug', $slug)->find($id);
+        $comment = Comment::where('review_id', $review_id)->find($id);
         if ($comment && $comment->integration_id == $this->integration_id)
         {
             $validated = $this->validate($request, [
@@ -174,8 +174,9 @@ class CommentController extends Controller
                 'author' => 'sometimes|string|max:255',
                 'author_email' => 'sometimes|string|max:255',
                 'author_slug' => 'sometimes|string|max:255',
-                'datetime' => 'sometimes|date|max:255',
-                'meta' => 'sometimes|array'
+                'commented_at' => 'sometimes|date|max:255',
+                'meta' => 'sometimes|array',
+                'tags' => 'sometimes|array'
             ]);
     
             //validate meta field
@@ -188,6 +189,17 @@ class CommentController extends Controller
             }
             else
                 $validated['meta'] = null;
+
+            //validate tags field
+            if(isset($validated['tags']) && $this->json_validator($validated['tags'])){
+                $size = mb_strlen(json_encode($validated['tags'], JSON_NUMERIC_CHECK), '8bit');
+                if($size > 512){
+                    return response()->json("Tags data field cannot exceed 512 bytes", 403);
+                }
+                $validated['tags'] = json_encode($validated['tags']);
+            }
+            else
+                $validated['tags'] = null;
             
             
             //change the comment
@@ -197,7 +209,7 @@ class CommentController extends Controller
         }
         else
         {
-            return response()->json("Comment {$id} not found", 404);
+            return response()->json("Comment {$id} on review {$review_id} not found", 404);
         }
     }
 
@@ -215,7 +227,7 @@ class CommentController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/api/reviews/{slug}/comment/{id}",
+     *     path="/api/reviews/{review_id}/comments/{id}",
      *     summary="Deletes a specified comment on a review",
      *     operationId="comment.remove",
      *     tags={"Comment"},
@@ -227,9 +239,9 @@ class CommentController extends Controller
      *         @OA\Schema(type="string"),
      *      ),
      *     @OA\Parameter(
-     *         name="slug",
+     *         name="id",
      *         in="path",
-     *         description="Slug of review comment belongs to",
+     *         description="ID of review the comment belongs to",
      *         required=true,
      *         @OA\Schema(type="string"),
      *      ),
@@ -247,17 +259,17 @@ class CommentController extends Controller
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function remove(string $slug, int $id) : JsonResponse
+    public function remove(int $review_id, int $id) : JsonResponse
     {
-        $comment = Comment::where('review_slug', $slug)->find($id);
+        $comment = Comment::where('review_id', $review_id)->find($id);
         if ($comment && $comment->integration_id == $this->integration_id)
         {
             $comment->delete();
-            return response()->json("Comment {$id} deleted", 200);
+            return response()->json("Comment {$id} on review {$id} deleted", 200);
         }
         else
         {
-            return response()->json("Comment {$id} not found", 404);
+            return response()->json("Comment {$id} on review {$id} not found", 404);
         }
     }
 }
