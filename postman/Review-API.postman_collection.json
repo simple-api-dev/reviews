@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "059d3bcb-8157-4c68-8378-7ba25f2bd5f3",
+		"_postman_id": "3ef59d8a-c0b1-43d4-9316-f7327f829a9b",
 		"name": "Review-API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -183,9 +183,8 @@
 								"exec": [
 									"if (pm.response.code == 200){\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.environment.set(\"review_slug\", jsonData.slug);\r",
+									"    pm.environment.set(\"review_id\", jsonData.id);\r",
 									"    pm.environment.set(\"author_slug\", jsonData.author_slug);\r",
-									"    pm.environment.set(\"related_slug\", jsonData.related_slug);\r",
 									"}"
 								],
 								"type": "text/javascript"
@@ -197,7 +196,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"slug\": \"burger-review\",\r\n    \"title\": \"Review of Joe's Diner\",\r\n    \"body\": \"Best hamburgers around!\",\r\n    \"rating\": 0.80,\r\n    \"bad\": false,\r\n    \"spam\": false,\r\n    \"helpful_counter\": 12,\r\n    \"unhelpful_counter\": 5,\r\n    \"author\": \"John Doe\",\r\n    \"author_email\": \"john@example.com\",\r\n    \"author_slug\": \"john-doe-42\",\r\n    \"datetime\": \"2016-01-01 10:00:00\",\r\n    \"related_slug\": \"best-restaurants-list\",\r\n    \"meta\":\r\n        {\r\n            \"created_in\": \"USA\"\r\n        }\r\n}",
+							"raw": "{\r\n    \"tags\": \"burger-review\",\r\n    \"title\": \"Review of Joe's Diner\",\r\n    \"body\": \"Best hamburgers around!\",\r\n    \"rating\": 0.80,\r\n    \"bad\": false,\r\n    \"spam\": false,\r\n    \"helpful_counter\": 12,\r\n    \"unhelpful_counter\": 5,\r\n    \"author\": \"John Doe\",\r\n    \"author_email\": \"john@example.com\",\r\n    \"author_slug\": \"john-doe-42\",\r\n    \"datetime\": \"2016-01-01 10:00:00\",\r\n    \"meta\":\r\n        {\r\n            \"created_in\": \"USA\"\r\n        }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -256,6 +255,11 @@
 									"key": "helpful",
 									"value": "true",
 									"disabled": true
+								},
+								{
+									"key": "tags",
+									"value": "",
+									"disabled": true
 								}
 							]
 						}
@@ -268,14 +272,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{site}}/api/reviews/{{review_slug}}?apikey={{apikey}}",
+							"raw": "{{site}}/api/reviews/{{review_id}}?apikey={{apikey}}",
 							"host": [
 								"{{site}}"
 							],
 							"path": [
 								"api",
 								"reviews",
-								"{{review_slug}}"
+								"{{review_id}}"
 							],
 							"query": [
 								{
@@ -293,41 +297,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{site}}/api/authors/{{author_slug}}/reviews?apikey={{apikey}}",
+							"raw": "{{site}}/api/authors/{{author_slug}}?apikey={{apikey}}",
 							"host": [
 								"{{site}}"
 							],
 							"path": [
 								"api",
 								"authors",
-								"{{author_slug}}",
-								"reviews"
-							],
-							"query": [
-								{
-									"key": "apikey",
-									"value": "{{apikey}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Reviews - By Related",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{site}}/api/authors/{{author_slug}}/reviews?apikey={{apikey}}",
-							"host": [
-								"{{site}}"
-							],
-							"path": [
-								"api",
-								"authors",
-								"{{author_slug}}",
-								"reviews"
+								"{{author_slug}}"
 							],
 							"query": [
 								{
@@ -349,7 +326,6 @@
 									"if (pm.response.code == 200){\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.environment.set(\"author_slug\", jsonData.author_slug);\r",
-									"    pm.environment.set(\"related_slug\", jsonData.related_slug);\r",
 									"}"
 								],
 								"type": "text/javascript"
@@ -369,14 +345,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{site}}/api/reviews/{{review_slug}}?apikey={{apikey}}",
+							"raw": "{{site}}/api/reviews/{{review_id}}?apikey={{apikey}}",
 							"host": [
 								"{{site}}"
 							],
 							"path": [
 								"api",
 								"reviews",
-								"{{review_slug}}"
+								"{{review_id}}"
 							],
 							"query": [
 								{
@@ -405,14 +381,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{site}}/api/reviews/{{review_slug}}?apikey={{apikey}}",
+							"raw": "{{site}}/api/reviews/{{review_id}}?apikey={{apikey}}",
 							"host": [
 								"{{site}}"
 							],
 							"path": [
 								"api",
 								"reviews",
-								"{{review_slug}}"
+								"{{review_id}}"
 							],
 							"query": [
 								{
@@ -458,14 +434,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{site}}/api/reviews/{{review_slug}}/comments?apikey={{apikey}}",
+							"raw": "{{site}}/api/reviews/{{review_id}}/comments?apikey={{apikey}}",
 							"host": [
 								"{{site}}"
 							],
 							"path": [
 								"api",
 								"reviews",
-								"{{review_slug}}",
+								"{{review_id}}",
 								"comments"
 							],
 							"query": [
@@ -504,14 +480,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{site}}/api/reviews/{{review_slug}}/comments/{{comment_id}}?apikey={{apikey}}",
+							"raw": "{{site}}/api/reviews/{{review_id}}/comments/{{comment_id}}?apikey={{apikey}}",
 							"host": [
 								"{{site}}"
 							],
 							"path": [
 								"api",
 								"reviews",
-								"{{review_slug}}",
+								"{{review_id}}",
 								"comments",
 								"{{comment_id}}"
 							],
@@ -542,14 +518,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{site}}/api/reviews/{{review_slug}}/comments/{{comment_id}}?apikey={{apikey}}",
+							"raw": "{{site}}/api/reviews/{{review_id}}/comments/{{comment_id}}?apikey={{apikey}}",
 							"host": [
 								"{{site}}"
 							],
 							"path": [
 								"api",
 								"reviews",
-								"{{review_slug}}",
+								"{{review_id}}",
 								"comments",
 								"{{comment_id}}"
 							],
